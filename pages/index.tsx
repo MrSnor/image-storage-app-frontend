@@ -3,15 +3,17 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Bridge from "../components/Icons/Bridge";
 import Logo from "../components/Icons/Logo";
 import Modal from "../components/Modal";
-// import cloudinary from "../utils/cloudinary";
-// import getBase64ImageUrl from "../utils/generateBlurPlaceholder";
 import type { ImageProps } from "../utils/types";
 import { useLastViewedPhoto } from "../utils/useLastViewedPhoto";
 import FileUpload from "../components/FileUploadAndPrev/FileUpload";
+
+// Generic blur data URL (light gray color)
+const genericBlurDataURL =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=";
 
 const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
   const router = useRouter();
@@ -23,7 +25,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
   useEffect(() => {
     // This effect keeps track of the last viewed photo in the modal to keep the index page in sync when the user navigates back
     if (lastViewedPhoto && !photoId) {
-      lastViewedPhotoRef.current.scrollIntoView({ block: "center" });
+      lastViewedPhotoRef.current?.scrollIntoView({ block: "center" });
       setLastViewedPhoto(null);
     }
   }, [photoId, lastViewedPhoto, setLastViewedPhoto]);
@@ -49,8 +51,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
               setLastViewedPhoto(photoId);
             }}
           />
-        )}
-        {/* Upload images */}
+        )}{" "}
         <FileUpload />
         <div className="columns-1 gap-4 sm:columns-2 xl:columns-3 2xl:columns-4">
           {/* <div className="after:content relative mb-5 flex h-[629px] flex-col items-center justify-end gap-4 overflow-hidden rounded-lg bg-white/10 px-6 pb-16 pt-64 text-center text-white shadow-highlight after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight lg:pt-0">
@@ -68,16 +69,8 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
               Our incredible Next.js community got together in San Francisco for
               our first ever in-person conference!
             </p>
-            <a
-              className="pointer z-10 mt-6 rounded-lg border border-white bg-white px-3 py-2 text-sm font-semibold text-black transition hover:bg-white/10 hover:text-white md:mt-4"
-              href="https://vercel.com/new/clone?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-cloudinary&project-name=nextjs-image-gallery&repository-name=with-cloudinary&env=NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET,CLOUDINARY_FOLDER&envDescription=API%20Keys%20from%20Cloudinary%20needed%20to%20run%20this%20application"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Clone and Deploy
-            </a>
           </div> */}
-          {images.map(({ id, uuid, format }) => (
+          {images.map(({ id, uuid, fileName, fileType, size }) => (
             <Link
               key={id}
               href={`/?photoId=${id}`}
@@ -87,11 +80,11 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
               className="after:content group relative mb-5 block w-full cursor-zoom-in after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight"
             >
               <Image
-                alt="Next.js Conf photo"
+                alt={fileName}
                 className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110"
                 style={{ transform: "translate3d(0, 0, 0)" }}
-                placeholder="empty"
-                // blurDataURL={blurDataUrl}
+                placeholder="blur"
+                blurDataURL={genericBlurDataURL}
                 src={`http://localhost:8080/api/show?uuid=${uuid}`}
                 width={720}
                 height={480}
@@ -105,7 +98,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
         </div>
       </main>
       <footer className="p-6 text-center text-white/80 sm:p-12">
-      Privacy should not be a luxury.
+        Privacy should not be a luxury.
       </footer>
     </>
   );
@@ -131,16 +124,6 @@ export async function getStaticProps() {
       size: image.size,
       fileType: image.fileType,
     }));
-
-    // Generate blur data URLs (you might need to adjust this part)
-    // const blurImagePromises = reducedResults.map((image) =>
-    //   getBase64ImageUrl(`http://localhost:8080/api/show?uuid=${image.uuid}`)
-    // );
-    // const imagesWithBlurDataUrls = await Promise.all(blurImagePromises);
-
-    // for (let i = 0; i < reducedResults.length; i++) {
-    //   reducedResults[i].blurDataUrl = imagesWithBlurDataUrls[i];
-    // }
 
     return {
       props: {
