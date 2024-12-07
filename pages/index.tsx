@@ -31,7 +31,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
   return (
     <>
       <Head>
-        <title>Next.js Conf 2022 Photos</title>
+        <title>Image Storage App</title>
         <meta
           property="og:image"
           content="https://nextjsconf-pics.vercel.app/og-image.png"
@@ -157,7 +157,7 @@ export async function getStaticProps() {
       fileName: image.fileName,
       size: image.size,
       fileType: image.fileType,
-    }));
+    })).reverse();
 
     // Generate blur data URLs (you might need to adjust this part)
     // const blurImagePromises = reducedResults.map((image) =>
