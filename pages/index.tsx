@@ -105,34 +105,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
         </div>
       </main>
       <footer className="p-6 text-center text-white/80 sm:p-12">
-        Thank you to{" "}
-        <a
-          href="https://edelsonphotography.com/"
-          target="_blank"
-          className="font-semibold hover:text-white"
-          rel="noreferrer"
-        >
-          Josh Edelson
-        </a>
-        ,{" "}
-        <a
-          href="https://www.newrevmedia.com/"
-          target="_blank"
-          className="font-semibold hover:text-white"
-          rel="noreferrer"
-        >
-          Jenny Morgan
-        </a>
-        , and{" "}
-        <a
-          href="https://www.garysextonphotography.com/"
-          target="_blank"
-          className="font-semibold hover:text-white"
-          rel="noreferrer"
-        >
-          Gary Sexton
-        </a>{" "}
-        for the pictures.
+      Privacy should not be a luxury.
       </footer>
     </>
   );
@@ -157,7 +130,7 @@ export async function getStaticProps() {
       fileName: image.fileName,
       size: image.size,
       fileType: image.fileType,
-    })).reverse();
+    }));
 
     // Generate blur data URLs (you might need to adjust this part)
     // const blurImagePromises = reducedResults.map((image) =>
