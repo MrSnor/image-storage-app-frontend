@@ -7,8 +7,8 @@ import { useEffect, useRef } from "react";
 import Bridge from "../components/Icons/Bridge";
 import Logo from "../components/Icons/Logo";
 import Modal from "../components/Modal";
-import cloudinary from "../utils/cloudinary";
-import getBase64ImageUrl from "../utils/generateBlurPlaceholder";
+// import cloudinary from "../utils/cloudinary";
+// import getBase64ImageUrl from "../utils/generateBlurPlaceholder";
 import type { ImageProps } from "../utils/types";
 import { useLastViewedPhoto } from "../utils/useLastViewedPhoto";
 
@@ -74,7 +74,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
               Clone and Deploy
             </a>
           </div>
-          {images.map(({ id, public_id, format, blurDataUrl }) => (
+          {images.map(({ id, uuid, format }) => (
             <Link
               key={id}
               href={`/?photoId=${id}`}
@@ -87,9 +87,9 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
                 alt="Next.js Conf photo"
                 className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110"
                 style={{ transform: "translate3d(0, 0, 0)" }}
-                placeholder="blur"
-                blurDataURL={blurDataUrl}
-                src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_720/${public_id}.${format}`}
+                placeholder="empty"
+                // blurDataURL={blurDataUrl}
+                src={`http://localhost:8080/api/show?uuid=${uuid}`}
                 width={720}
                 height={480}
                 sizes="(max-width: 640px) 100vw,
@@ -138,37 +138,45 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
 export default Home;
 
 export async function getStaticProps() {
-  const results = await cloudinary.v2.search
-    .expression(`folder:${process.env.CLOUDINARY_FOLDER}/*`)
-    .sort_by("public_id", "desc")
-    .max_results(400)
-    .execute();
-  let reducedResults: ImageProps[] = [];
+  try {
+    const response = await fetch('http://localhost:8080/api/images');
+    if (!response.ok) {
+      throw new Error('Failed to fetch images');
+    }
+    const images: ImageProps[] = await response.json();
 
-  let i = 0;
-  for (let result of results.resources) {
-    reducedResults.push({
-      id: i,
-      height: result.height,
-      width: result.width,
-      public_id: result.public_id,
-      format: result.format,
-    });
-    i++;
+    const reducedResults: ImageProps[] = images.map((image, index) => ({
+      id: index,
+      height: 'auto',
+      width: 'auto', 
+      uuid: image.uuid,
+      format: image.fileType.split('/')[1], // Assuming fileType is like "image/jpeg"
+      fileName: image.fileName,
+      size: image.size,
+      fileType: image.fileType
+    }));
+
+    // Generate blur data URLs (you might need to adjust this part)
+    // const blurImagePromises = reducedResults.map((image) => 
+    //   getBase64ImageUrl(`http://localhost:8080/api/show?uuid=${image.uuid}`)
+    // );
+    // const imagesWithBlurDataUrls = await Promise.all(blurImagePromises);
+
+    // for (let i = 0; i < reducedResults.length; i++) {
+    //   reducedResults[i].blurDataUrl = imagesWithBlurDataUrls[i];
+    // }
+
+    return {
+      props: {
+        images: reducedResults,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    return {
+      props: {
+        images: [],
+      },
+    };
   }
-
-  const blurImagePromises = results.resources.map((image: ImageProps) => {
-    return getBase64ImageUrl(image);
-  });
-  const imagesWithBlurDataUrls = await Promise.all(blurImagePromises);
-
-  for (let i = 0; i < reducedResults.length; i++) {
-    reducedResults[i].blurDataUrl = imagesWithBlurDataUrls[i];
-  }
-
-  return {
-    props: {
-      images: reducedResults,
-    },
-  };
 }

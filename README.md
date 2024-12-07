@@ -29,3 +29,43 @@ pnpm create next-app --example with-cloudinary with-cloudinary-app
 ## References
 
 - Cloudinary API: https://cloudinary.com/documentation/transformation_reference
+
+```
+with-cloudinary
+├─ components
+│  ├─ Carousel.tsx
+│  ├─ Icons
+│  │  ├─ Bridge.tsx
+│  │  ├─ Logo.tsx
+│  │  └─ Twitter.tsx
+│  ├─ Modal.tsx
+│  └─ SharedModal.tsx
+├─ next.config.js
+├─ package.json
+├─ pages
+│  ├─ index.tsx
+│  ├─ p
+│  │  └─ [photoId].tsx
+│  ├─ _app.tsx
+│  └─ _document.tsx
+├─ pnpm-lock.yaml
+├─ postcss.config.js
+├─ public
+│  ├─ favicon.ico
+│  └─ og-image.png
+├─ README.md
+├─ styles
+│  └─ index.css
+├─ tailwind.config.js
+├─ tsconfig.json
+└─ utils
+   ├─ animationVariants.ts
+   ├─ cachedImages.ts
+   ├─ cloudinary.ts
+   ├─ downloadPhoto.ts
+   ├─ generateBlurPlaceholder.ts
+   ├─ range.ts
+   ├─ types.ts
+   └─ useLastViewedPhoto.ts
+
+```

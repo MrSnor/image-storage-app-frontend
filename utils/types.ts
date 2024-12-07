@@ -3,9 +3,12 @@ export interface ImageProps {
   id: number;
   height: string;
   width: string;
-  public_id: string;
+  uuid: string;
   format: string;
-  blurDataUrl?: string;
+  // blurDataUrl?: string;
+  fileName: string;
+  size: number;
+  fileType: string;
 }
 
 export interface SharedModalProps {

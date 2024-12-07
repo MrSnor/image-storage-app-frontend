@@ -3,16 +3,18 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import Carousel from "../../components/Carousel";
 import getResults from "../../utils/cachedImages";
-import cloudinary from "../../utils/cloudinary";
-import getBase64ImageUrl from "../../utils/generateBlurPlaceholder";
+// import cloudinary from "../../utils/cloudinary";
+// import getBase64ImageUrl from "../../utils/generateBlurPlaceholder";
 import type { ImageProps } from "../../utils/types";
 
 const Home: NextPage = ({ currentPhoto }: { currentPhoto: ImageProps }) => {
+  // console.log("🚀 ~ currentPhoto:", currentPhoto);
   const router = useRouter();
   const { photoId } = router.query;
+  // console.log("🚀 ~ photoId:", photoId)
   let index = Number(photoId);
 
-  const currentPhotoUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_2560/${currentPhoto.public_id}.${currentPhoto.format}`;
+  const currentPhotoUrl = `http://localhost:8080/api/show?uuid=${photoId}`;
 
   return (
     <>
@@ -31,47 +33,47 @@ const Home: NextPage = ({ currentPhoto }: { currentPhoto: ImageProps }) => {
 export default Home;
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  const results = await getResults();
+  try {
+    const response = await fetch("http://localhost:8080/api/images");
+    if (!response.ok) {
+      throw new Error("Failed to fetch images");
+    }
+    const images: ImageProps[] = await response.json();
 
-  let reducedResults: ImageProps[] = [];
-  let i = 0;
-  for (let result of results.resources) {
-    reducedResults.push({
-      id: i,
-      height: result.height,
-      width: result.width,
-      public_id: result.public_id,
-      format: result.format,
-    });
-    i++;
+    const reducedResults: ImageProps[] = images.map((image, index) => ({
+      id: index,
+      height: "auto",
+      width: "auto",
+      uuid: image.uuid,
+      format: image.fileType.split("/")[1], // Assuming fileType is like "image/jpeg"
+      fileName: image.fileName,
+      size: image.size,
+      fileType: image.fileType,
+    }));
+
+    const currentPhoto = reducedResults.find(
+      (img) => img.id === Number(context.params.photoId)
+    );
+
+    return {
+      props: {
+        currentPhoto: currentPhoto,
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      props: {
+        currentPhoto: null,
+      },
+    };
   }
-
-  const currentPhoto = reducedResults.find(
-    (img) => img.id === Number(context.params.photoId),
-  );
-  currentPhoto.blurDataUrl = await getBase64ImageUrl(currentPhoto);
-
-  return {
-    props: {
-      currentPhoto: currentPhoto,
-    },
-  };
 };
 
 export async function getStaticPaths() {
-  const results = await cloudinary.v2.search
-    .expression(`folder:${process.env.CLOUDINARY_FOLDER}/*`)
-    .sort_by("public_id", "desc")
-    .max_results(400)
-    .execute();
-
-  let fullPaths = [];
-  for (let i = 0; i < results.resources.length; i++) {
-    fullPaths.push({ params: { photoId: i.toString() } });
-  }
 
   return {
-    paths: fullPaths,
+    paths: [],
     fallback: false,
   };
 }
