@@ -11,6 +11,7 @@ import Modal from "../components/Modal";
 // import getBase64ImageUrl from "../utils/generateBlurPlaceholder";
 import type { ImageProps } from "../utils/types";
 import { useLastViewedPhoto } from "../utils/useLastViewedPhoto";
+import FileUpload from "../components/FileUploadAndPrev/FileUpload";
 
 const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
   const router = useRouter();
@@ -49,8 +50,10 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
             }}
           />
         )}
+        {/* Upload images */}
+        <FileUpload />
         <div className="columns-1 gap-4 sm:columns-2 xl:columns-3 2xl:columns-4">
-          <div className="after:content relative mb-5 flex h-[629px] flex-col items-center justify-end gap-4 overflow-hidden rounded-lg bg-white/10 px-6 pb-16 pt-64 text-center text-white shadow-highlight after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight lg:pt-0">
+          {/* <div className="after:content relative mb-5 flex h-[629px] flex-col items-center justify-end gap-4 overflow-hidden rounded-lg bg-white/10 px-6 pb-16 pt-64 text-center text-white shadow-highlight after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight lg:pt-0">
             <div className="absolute inset-0 flex items-center justify-center opacity-20">
               <span className="flex max-h-full max-w-full items-center justify-center">
                 <Bridge />
@@ -73,7 +76,7 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
             >
               Clone and Deploy
             </a>
-          </div>
+          </div> */}
           {images.map(({ id, uuid, format }) => (
             <Link
               key={id}
@@ -139,25 +142,25 @@ export default Home;
 
 export async function getStaticProps() {
   try {
-    const response = await fetch('http://localhost:8080/api/images');
+    const response = await fetch("http://localhost:8080/api/images");
     if (!response.ok) {
-      throw new Error('Failed to fetch images');
+      throw new Error("Failed to fetch images");
     }
     const images: ImageProps[] = await response.json();
 
     const reducedResults: ImageProps[] = images.map((image, index) => ({
       id: index,
-      height: 'auto',
-      width: 'auto', 
+      height: "auto",
+      width: "auto",
       uuid: image.uuid,
-      format: image.fileType.split('/')[1], // Assuming fileType is like "image/jpeg"
+      format: image.fileType.split("/")[1], // Assuming fileType is like "image/jpeg"
       fileName: image.fileName,
       size: image.size,
-      fileType: image.fileType
+      fileType: image.fileType,
     }));
 
     // Generate blur data URLs (you might need to adjust this part)
-    // const blurImagePromises = reducedResults.map((image) => 
+    // const blurImagePromises = reducedResults.map((image) =>
     //   getBase64ImageUrl(`http://localhost:8080/api/show?uuid=${image.uuid}`)
     // );
     // const imagesWithBlurDataUrls = await Promise.all(blurImagePromises);
@@ -172,7 +175,7 @@ export async function getStaticProps() {
       },
     };
   } catch (error) {
-    console.error('Error fetching images:', error);
+    console.error("Error fetching images:", error);
     return {
       props: {
         images: [],
